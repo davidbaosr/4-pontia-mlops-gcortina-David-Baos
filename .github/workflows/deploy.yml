@@ -15,4 +15,4 @@ jobs:
         run: |
           curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK }}
         env:
-          GITHUB_TOKEN:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
