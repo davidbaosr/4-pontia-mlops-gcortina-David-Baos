@@ -14,7 +14,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -29,23 +29,23 @@ jobs:
       - name: Run tests and save exit code
         id: tests
         run: |
-            mkdir -p test-results
-            PYTHONPATH=src pytest unit_tests/ --capture=tee-sys --cov=model --cov=evaluate --cov=data_loader --cov-report=term --cov-report=html --junitxml=test-results/results.xml > test-results/results.log
+          mkdir -p test-results
+          pytest model_tests/ --junitxml=test-results/results.xml > test-results/results.log 2>&1
         continue-on-error: true
 
       - name: Comment test results and coverage on PR
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
             const results = fs.readFileSync('test-results/results.log', 'utf8');
-            const truncated = results.length > 65000 ? results.slice(0, 65000) + '\\n...TRUNCATED...' : results;
+            const truncated = results.length > 65000 ? results.slice(0, 65000) + '\n...TRUNCATED...' : results;
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `### 🧪 Test Results with Coverage\n\n\`\`\`\n${truncated}\n\`\`\``
+              body: `### 🧪 Test Results\n\n\`\`\`\n${truncated}\n\`\`\``
             });
 
       - name: Fail the job if tests failed
