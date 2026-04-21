@@ -12,9 +12,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -27,28 +28,29 @@ jobs:
           pip install -r requirements.txt
 
       - name: Download Adult dataset
-  run: |
-    mkdir -p data/raw
-    curl -o data/raw/adult.data https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
-    curl -o data/raw/adult.test https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test
+        run: |
+          mkdir -p data/raw
+          curl -L -o data/raw/adult.data https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
+          curl -L -o data/raw/adult.test https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test
 
-  - name: Train and save model
-  run: |
-    python src/main.py
+      - name: Train and save model
+        run: |
+          python src/main.py
 
-- name: Run model tests
-  run: python model_tests/test_model.py
+      - name: Run model tests
+        run: |
+          pytest model_tests/
 
-- name: Upload model to GitHub Release
-  uses: softprops/action-gh-release@v1
-  with:
-    files: |
-      models/model.pkl
-      models/scaler.pkl
-      models/encoders.pkl
-    tag_name: model-${{ github.run_number }}
-    body: "Model trained on ${{ github.event.head_commit.timestamp }}"
-    draft: false
-    prerelease: false
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload model to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            models/model.pkl
+            models/scaler.pkl
+            models/encoders.pkl
+          tag_name: model-${{ github.run_number }}
+          body: "Model trained on run ${{ github.run_number }}"
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
