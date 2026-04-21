@@ -27,11 +27,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Download Adult dataset
+      - name: Download dataset
         run: |
           mkdir -p data/raw
-          curl -L -o data/raw/adult.data https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data
-          curl -L -o data/raw/adult.test https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.test
+          curl -L -o data/raw/data.csv https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
 
       - name: Train and save model
         run: |
@@ -44,13 +43,8 @@ jobs:
       - name: Upload model to GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            models/model.pkl
-            models/scaler.pkl
-            models/encoders.pkl
+          files: models/model.pkl
           tag_name: model-${{ github.run_number }}
-          body: "Model trained on run ${{ github.run_number }}"
-          draft: false
-          prerelease: false
+          body: "Model trained in run ${{ github.run_number }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
